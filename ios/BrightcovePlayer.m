@@ -1,5 +1,8 @@
 #import "BrightcovePlayer.h"
 
+@import GoogleInteractiveMediaAds;
+@import BrightcoveIMA;
+
 @interface BrightcovePlayer () <BCOVPlaybackControllerDelegate, BCOVPUIPlayerViewDelegate>
 
 @end
@@ -14,12 +17,25 @@
 }
 
 - (void)setup {
-    _playbackController = [BCOVPlayerSDKManager.sharedManager createPlaybackController];
+    IMASettings *imaSettings = [[IMASettings alloc] init];
+    imaSettings.ppid = @"idid";
+    imaSettings.language = @"en";
+    
+    IMAAdsRenderingSettings *renderSettings = [[IMAAdsRenderingSettings alloc] init];
+
+    BCOVIMAAdsRequestPolicy *adsRequestPolicy = [BCOVIMAAdsRequestPolicy adsRequestPolicyWithVASTAdTagsInCuePointsAndAdsCuePointProgressPolicy:nil];
+    
+    _playbackController = [BCOVPlayerSDKManager.sharedManager createIMAPlaybackControllerWithSettings:imaSettings
+                                adsRenderingSettings:renderSettings
+                                    adsRequestPolicy:adsRequestPolicy
+                                         adContainer:_playerView.contentOverlayView
+                                      companionSlots:nil
+                                        viewStrategy:nil];
     _playbackController.delegate = self;
     _playbackController.autoPlay = YES;
     _playbackController.autoAdvance = YES;
     
-    _playerView = [[BCOVPUIPlayerView alloc] initWithPlaybackController:self.playbackController options:nil controlsView:[BCOVPUIBasicControlView basicControlViewWithVODLayout] ];
+    _playerView = [[BCOVPUIPlayerView alloc] initWithPlaybackController:_playbackController options:nil controlsView:[BCOVPUIBasicControlView basicControlViewWithVODLayout] ];
     _playerView.delegate = self;
     _playerView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     _playerView.backgroundColor = UIColor.blackColor;
